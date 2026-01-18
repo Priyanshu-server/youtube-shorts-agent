@@ -1,6 +1,5 @@
-def main():
-    print("Hello from app!")
-
+import langchain
+import langgraph
 
 if __name__ == "__main__":
-    main()
+    print(langchain.__version__)
