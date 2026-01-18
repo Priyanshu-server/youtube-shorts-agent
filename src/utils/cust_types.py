@@ -1,4 +1,5 @@
 from dataclasses import dataclass
+from dataclasses import field
 from typing import Dict, List, Any
 
 # 3rd party types
@@ -12,7 +13,7 @@ from langchain.messages import AIMessage, HumanMessage
 class URLType:
     url: str
     title: str
-    created_time: datetime
+    created_time: datetime | None = None
 
     def __post_init__(self):
         if not self.created_time:
@@ -28,7 +29,7 @@ class URLType:
 @dataclass(repr=True)
 class AgentOutputMetadata:
     tool_called: bool
-    message: str
+    failure_message: str
 
 
 @dataclass(repr=True)
@@ -40,3 +41,26 @@ class AgentOutput:
     ]  # Optional (either AIMessage or HumanMessage)
     metadata: AgentOutputMetadata
     success: bool
+
+
+@dataclass(repr=True)
+class Model:
+    model_name: str
+    model_parent: str
+    model: Any
+
+
+@dataclass(repr=True)
+class Agent:
+    agent_name: str
+    model: Model
+    metadata: Dict[str, Any] = field(default_factory=dict)
+    output: AgentOutput | None = None
+    created_time: datetime | None = None
+
+    def __post_init__(self):
+        if not self.created_time:
+            self.created_time = datetime.now(timezone.utc)
+
+    def __str__(self):
+        return f"Agent(agent_name={self.agent_name}, model={self.model}, metadata={self.metadata}, created_time={self.created_time})"
