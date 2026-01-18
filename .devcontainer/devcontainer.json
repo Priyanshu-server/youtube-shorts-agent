@@ -1,0 +1,28 @@
+{
+  "name": "youtube-shorts-agent",
+  "build": {
+    "dockerfile": "../Dockerfile",
+    "context": ".."
+  },
+  "workspaceFolder": "/app",
+  "mounts": [
+    "source=${localWorkspaceFolder},target=/app,type=bind"
+  ],
+  "remoteUser": "root",
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        "ms-python.python",
+        "ms-python.vscode-pylance",
+        "charliermarsh.ruff"
+      ],
+      "settings": {
+        "python.defaultInterpreterPath": "/app/.venv/bin/python",
+        "python.analysis.autoSearchPaths": true,
+        "python.analysis.typeCheckingMode": "basic",
+        "editor.formatOnSave": true,
+        "ruff.organizeImports": true
+      }
+    }
+  }
+}
