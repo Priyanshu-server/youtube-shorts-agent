@@ -23,10 +23,13 @@ def get_agent(
         extra={"agent_name": agent_name, "model_parent": model_parent, "model_name": model_name},
     )
     model = get_model(model_name, model_parent, *model_args, **model_kwargs)
+    
     # TODO : Agent Creation
+    agent = None
 
     return Agent(
         agent_name=agent_name,
+        graph = agent,
         model=model,
         metadata=metadata,
     )

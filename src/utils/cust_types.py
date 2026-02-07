@@ -5,6 +5,7 @@ from typing import Dict, List, Any
 # 3rd party types
 from datetime import datetime, timezone
 from langchain.messages import AIMessage, HumanMessage
+from langgraph.graph.state import CompiledStateGraph
 
 # Custom Types for basic processing
 
@@ -53,6 +54,7 @@ class Model:
 @dataclass(repr=True)
 class Agent:
     agent_name: str
+    graph : CompiledStateGraph
     model: Model
     metadata: Dict[str, Any] = field(default_factory=dict)
     output: AgentOutput | None = None
