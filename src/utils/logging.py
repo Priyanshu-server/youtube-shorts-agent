@@ -7,6 +7,13 @@ from pathlib import Path
 _LOG_CONTEXT: ContextVar[Dict[str, Any]] = ContextVar("log_context", default={})
 
 
+class _SafeExtraFormatter(logging.Formatter):
+    def format(self, record: logging.LogRecord) -> str:
+        if not hasattr(record, "extra"):
+            record.extra = {}
+        return super().format(record)
+
+
 class _ContextAdapter(logging.LoggerAdapter):
     def process(self, msg, kwargs):
         extra = kwargs.get("extra", {})
@@ -15,8 +22,8 @@ class _ContextAdapter(logging.LoggerAdapter):
             self.extra = {}
 
         merged = {**self.extra, **_LOG_CONTEXT.get(), **extra}
-        kwargs["extra"] = merged
-        return msg, {"extra": kwargs}
+        kwargs["extra"] = {"extra": merged}
+        return msg, kwargs
 
 
 def bind_context(**ctx: Any) -> None:
@@ -48,7 +55,7 @@ def configure_logging(
     for handler in list(root.handlers):
         root.removeHandler(handler)
 
-    formatter = logging.Formatter(
+    formatter = _SafeExtraFormatter(
         fmt="%(asctime)s %(levelname)s %(name)s %(message)s | metadata=%(extra)s",
         datefmt="%Y-%m-%dT%H:%M:%S%z",
     )
