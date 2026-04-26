@@ -11,19 +11,11 @@ RUN apt-get update \
 
 RUN curl -LsSf https://astral.sh/uv/install.sh | sh
 
-COPY . /app
+COPY pyproject.toml uv.lock* ./
 
 RUN /root/.local/bin/uv venv "$VIRTUAL_ENV" \
-    && if [ ! -f pyproject.toml ]; then \
-         /root/.local/bin/uv init -q; \
-       fi \
-    && if [ -f uv.lock ]; then \
-         /root/.local/bin/uv sync --frozen; \
-       elif [ -f pyproject.toml ]; then \
-         /root/.local/bin/uv sync; \
-       elif [ -f requirements.txt ]; then \
-         /root/.local/bin/uv pip install -r requirements.txt; \
-       fi \
-    && /root/.local/bin/uv add langgraph langchain
+    && /root/.local/bin/uv sync --frozen
+
+COPY . /app
 
 CMD ["python"]
