@@ -1,12 +1,16 @@
 from langgraph.graph import END, START, StateGraph
 from langgraph.graph.state import CompiledStateGraph
 from src.utils.cust_types import Agent
+from src.utils.logging import get_logger
 
 from .agent_state import YoutubeShortsState
+
+log = get_logger(__name__, component="youtube_shorts_agent")
 
 
 def ideas_node(state: YoutubeShortsState) -> dict:
     topic = state["topic"]
+    log.info("generating ideas", extra={"topic": topic})
     ideas = [
         f"Day in the life of someone obsessed with {topic}",
         f"3 things nobody tells you about {topic}",
@@ -17,6 +21,7 @@ def ideas_node(state: YoutubeShortsState) -> dict:
     result = f"YouTube Shorts ideas for '{topic}':\n" + "\n".join(
         f"  {i + 1}. {idea}" for i, idea in enumerate(ideas)
     )
+    log.info("ideas generated", extra={"topic": topic, "count": len(ideas)})
     return {"result": result}
 
 

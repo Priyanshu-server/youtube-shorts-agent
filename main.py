@@ -1,6 +1,7 @@
 from dotenv import load_dotenv
 
 from registry import REGISTRY
+from src.utils.logging import bind_context, clear_context
 
 load_dotenv()
 
@@ -29,14 +30,18 @@ def main() -> None:
     idx = pick_agent()
     entry = REGISTRY[idx]
 
-    collected = collect_inputs(entry)
+    bind_context(agent=entry.agent_name)
+    try:
+        collected = collect_inputs(entry)
 
-    graph = entry.factory()
-    output = graph.invoke(entry.build_graph_input(collected))
+        graph = entry.factory()
+        output = graph.invoke(entry.build_graph_input(collected))
 
-    print("\n" + "-" * 40)
-    print(output[entry.output_key])
-    print("-" * 40 + "\n")
+        print("\n" + "-" * 40)
+        print(output[entry.output_key])
+        print("-" * 40 + "\n")
+    finally:
+        clear_context()
 
 
 if __name__ == "__main__":

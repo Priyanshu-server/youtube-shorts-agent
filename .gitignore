@@ -8,7 +8,6 @@ venv/
 outputs/
 
 .env
-.env.*
 
 build/
 dist/
