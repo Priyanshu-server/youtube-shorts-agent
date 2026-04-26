@@ -1,37 +1,42 @@
 from dotenv import load_dotenv
 
-from settings import config
-from src.agents.html_poster_agent import get_html_poster_agent, invoke_html_poster_agent
-from src.utils.logging import bind_context, configure_logging, get_logger
+from registry import REGISTRY
 
-# Loading environment variables from .env file
 load_dotenv()
 
-# Configure logging for environment
-configure_logging(enable_console=True)
-bind_context(service=config.service_name, request_id=f"{config.env}-run")
-log = get_logger(config.logger_name)
+
+def pick_agent() -> int:
+    print("\nAvailable agents:")
+    for i, entry in enumerate(REGISTRY):
+        print(f"  [{i + 1}] {entry.agent_name} — {entry.agent_description}")
+    print()
+
+    while True:
+        raw = input("Select an agent (number): ").strip()
+        if raw.isdigit() and 1 <= int(raw) <= len(REGISTRY):
+            return int(raw) - 1
+        print(f"  Please enter a number between 1 and {len(REGISTRY)}.")
 
 
-# Main function
+def collect_inputs(entry) -> dict[str, str]:
+    collected: dict[str, str] = {}
+    for key, prompt in entry.inputs.items():
+        collected[key] = input(prompt).strip()
+    return collected
+
+
 def main() -> None:
-    agent = get_html_poster_agent(
-        agent_name="HTMLPosterAgent",
-        model_parent="openai",
-        model_name="gpt-4o-mini",
-        model_args=None,
-        model_kwargs={"temperature": 1},
-        metadata={"purpose": "html_poster_generation"},
-    )
-    log.info(f"agent created {agent.agent_name}")
-    log.info(f"agent model ready {agent.model.model_name}")
+    idx = pick_agent()
+    entry = REGISTRY[idx]
 
-    output = invoke_html_poster_agent(
-        agent,
-        "Create a social media HTML poster about cows. Use modern visual design and inline CSS.",
-        output_path="outputs/html_poster_cow.html",
-    )
-    print(f"Output : {output}")
+    collected = collect_inputs(entry)
+
+    graph = entry.factory()
+    output = graph.invoke(entry.build_graph_input(collected))
+
+    print("\n" + "-" * 40)
+    print(output[entry.output_key])
+    print("-" * 40 + "\n")
 
 
 if __name__ == "__main__":

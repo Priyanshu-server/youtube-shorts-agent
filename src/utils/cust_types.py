@@ -1,10 +1,9 @@
 from dataclasses import dataclass
 from dataclasses import field
-from typing import Dict, List, Any
+from typing import Dict, Any, Callable, Optional
 
 # 3rd party types
 from datetime import datetime, timezone
-from langchain.messages import AIMessage, HumanMessage
 from langgraph.graph.state import CompiledStateGraph
 
 # Custom Types for basic processing
@@ -28,23 +27,6 @@ class URLType:
 
 
 @dataclass(repr=True)
-class AgentOutputMetadata:
-    tool_called: bool
-    failure_message: str
-
-
-@dataclass(repr=True)
-class AgentOutput:
-    response: str
-    action: Dict[str, Any]
-    message_history: List[
-        AIMessage | HumanMessage
-    ]  # Optional (either AIMessage or HumanMessage)
-    metadata: AgentOutputMetadata
-    success: bool
-
-
-@dataclass(repr=True)
 class Model:
     model_name: str
     model_parent: str
@@ -54,10 +36,13 @@ class Model:
 @dataclass(repr=True)
 class Agent:
     agent_name: str
-    graph : CompiledStateGraph
-    model: Model
+    agent_description: str
+    inputs: Dict[str, str]                              # key → prompt text shown to user
+    factory: Callable[[], CompiledStateGraph]           # builds a fresh graph per run
+    build_graph_input: Callable[[Dict[str, str]], Dict[str, Any]]  # maps collected inputs → graph input dict
+    output_key: str                                     # key to read from graph output
+    graph: Optional[CompiledStateGraph] = None
     metadata: Dict[str, Any] = field(default_factory=dict)
-    output: AgentOutput | None = None
     created_time: datetime | None = None
 
     def __post_init__(self):
@@ -65,4 +50,4 @@ class Agent:
             self.created_time = datetime.now(timezone.utc)
 
     def __str__(self):
-        return f"Agent(agent_name={self.agent_name}, model={self.model}, metadata={self.metadata}, created_time={self.created_time})"
+        return f"Agent(agent_name={self.agent_name}, metadata={self.metadata}, created_time={self.created_time})"
