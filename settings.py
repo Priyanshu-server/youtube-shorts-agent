@@ -1,5 +1,7 @@
 from dataclasses import dataclass, field, fields
 import os
+from dotenv import load_dotenv
+load_dotenv()
 
 from src.utils.logging import configure_logging, get_logger
 

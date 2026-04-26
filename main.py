@@ -1,9 +1,7 @@
-from dotenv import load_dotenv
-
 from registry import REGISTRY
 from src.utils.logging import bind_context, clear_context
 
-load_dotenv()
+
 
 
 def pick_agent() -> int:
