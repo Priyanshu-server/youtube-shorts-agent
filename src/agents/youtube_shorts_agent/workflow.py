@@ -1,44 +1,47 @@
+import json
+
 from langgraph.graph import END, START, StateGraph
 from langgraph.graph.state import CompiledStateGraph
+
+from src.agents.youtube_shorts_agent.agent_state import YoutubeShortsState
+from src.agents.youtube_shorts_agent.utils import parse_query
 from src.utils.cust_types import Agent
 from src.utils.logging import get_logger
-
-from .agent_state import YoutubeShortsState
 
 log = get_logger(__name__, component="youtube_shorts_agent")
 
 
-def ideas_node(state: YoutubeShortsState) -> dict:
-    topic = state["topic"]
-    log.info("generating ideas", extra={"topic": topic})
-    ideas = [
-        f"Day in the life of someone obsessed with {topic}",
-        f"3 things nobody tells you about {topic}",
-        f"I tried {topic} for 7 days — here's what happened",
-        f"The fastest way to learn {topic} in 60 seconds",
-        f"Why everyone is wrong about {topic}",
-    ]
-    result = f"YouTube Shorts ideas for '{topic}':\n" + "\n".join(
-        f"  {i + 1}. {idea}" for i, idea in enumerate(ideas)
-    )
-    log.info("ideas generated", extra={"topic": topic, "count": len(ideas)})
-    return {"result": result}
+# Graph nodes
+
+
+def parse_node(state: YoutubeShortsState) -> dict:
+    query = state["query"]
+    log.info("parsing query", extra={"query": query})
+
+    parsed = parse_query(query)
+
+    result = json.dumps(parsed.model_dump(), indent=2)
+    log.info("query parsed", extra={"youtube_url": parsed.youtube_url})
+    return {"youtube_url": parsed.youtube_url, "reply": parsed.reply, "result": result}
 
 
 def build_workflow() -> CompiledStateGraph:
     graph: StateGraph = StateGraph(YoutubeShortsState)
-    graph.add_node("ideas", ideas_node)
-    graph.add_edge(START, "ideas")
-    graph.add_edge("ideas", END)
+    graph.add_node("parse", parse_node)
+    graph.add_edge(START, "parse")
+    graph.add_edge("parse", END)
     return graph.compile()
+
+
+# Main Function
 
 
 def get_agent() -> Agent:
     return Agent(
         agent_name="Youtube Shorts Agent",
-        agent_description="Generates YouTube Shorts video ideas for a given topic",
-        inputs={"topic": "Enter a topic : "},
+        agent_description="Extracts a YouTube link and intent from a free-form request and returns structured JSON",
+        inputs={"query": "Enter your request (include the YouTube link): "},
         factory=build_workflow,
-        build_graph_input=lambda d: {"topic": d["topic"], "result": ""},
+        build_graph_input=lambda d: {"query": d["query"], "youtube_url": "", "reply": "", "result": ""},
         output_key="result",
     )

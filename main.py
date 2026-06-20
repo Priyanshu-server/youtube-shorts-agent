@@ -1,3 +1,4 @@
+import settings  # loads .env and configures logging on import
 from registry import REGISTRY
 from src.utils.logging import bind_context, clear_context
 
