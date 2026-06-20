@@ -18,4 +18,4 @@ def get_model(model_name: str, model_parent: str, *model_args, **model_kwargs) -
 
 def get_openai_model(model_name, *args, **kwargs) -> ChatOpenAI:
     """Returns an instance of ChatOpenAI with the specified model name and parameters."""
-    return ChatOpenAI(name=model_name, *args, **kwargs)
+    return ChatOpenAI(model=model_name, *args, **kwargs)
